@@ -96,13 +96,20 @@ pg_rage_terminator_main(Datum main_arg)
 
 	while (!got_sigterm)
 	{
-		int rc, ret, i;
+		int rc = 0;
+        int ret, i;
+        int sleep_interval;
 
-		/* Wait necessary amount of time */
-		rc = WaitLatch(&MyProc->procLatch,
-					   WL_LATCH_SET | WL_TIMEOUT | WL_POSTMASTER_DEATH,
-					   interval * 1000L);
-		ResetLatch(&MyProc->procLatch);
+        if (0 == interval)
+            sleep_interval = 10;
+        else
+            sleep_interval = interval;
+
+        /* Wait necessary amount of time */
+        rc = WaitLatch(&MyProc->procLatch,
+                       WL_LATCH_SET | WL_TIMEOUT | WL_POSTMASTER_DEATH,
+                       sleep_interval * 1000L);
+        ResetLatch(&MyProc->procLatch);
 
 		/* Emergency bailout if postmaster has died */
 		if (rc & WL_POSTMASTER_DEATH)
@@ -135,6 +142,17 @@ pg_rage_terminator_main(Datum main_arg)
 			ereport(LOG, (errmsg("bgworker pg_rage_terminator signal: processed SIGTERM")));
 			proc_exit(0);
 		}
+
+        /*
+         * If interval is 0 we should not do anything.
+         * This has to be done after sighup and sigterm handling.
+         */
+        if (0 == interval)
+        {
+            elog(LOG, "Nothing to do, sleep zzzzZZZZ");
+            continue;
+        }
+
 
 		/* Process idle connection kill */
 		SetCurrentStatementStartTimestamp();
