@@ -6,7 +6,7 @@ chance.
 
 This worker can use the following parameter to decide the chance to kill a
 random backend.
-- pg_rage_terminator.chance, chance to kill a random backend. Valid valid are 0
+- pg_rage_terminator.chance, chance to kill a random backend. Valid values are 0
   to 100. Where 0 disables the "rage" process. 100 ensures every backend is
   killed.
 - pg_rage_terminator.interval, defines how often pg_rage_terminator looks for
