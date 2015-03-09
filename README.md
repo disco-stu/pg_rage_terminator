@@ -32,5 +32,5 @@ Following configuration options (GUC) controls pg_rage_terminator.
     is killed.
 
 *   __pg_rage_terminator.interval__: defines the interval of "kill" lookups in
-    seconds. Valid valid are 0 to 3600. Where 0 disables the lookup process
+    seconds. Valid values are 0 to 3600. Where 0 disables the lookup process
     completely.
