@@ -69,8 +69,8 @@ pg_rage_terminator_build_query(StringInfoData *buf)
                "pid, pg_terminate_backend(pid) as status, "
                "usename, datname, client_addr::text "
                "FROM pg_stat_activity "
-               "WHERE ((random() * 100)::int < %d) "
-               "AND pid != pg_backend_pid();",
+               "WHERE client_port IS NOT NULL",
+               "AND ((random() * 100)::int < %d) ",
                      chance);
     elog(DEBUG1, "Kill query is: %s", buf->data);
 }
