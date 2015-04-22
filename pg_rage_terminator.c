@@ -236,7 +236,7 @@ pg_rage_terminator_load_params(void)
                             "Default of 5",
                             &interval,
                             5,
-                            0,
+                            -1,
                             3600,
                             PGC_SIGHUP,
                             0,
