@@ -42,6 +42,12 @@ static int interval = 5;
 /* Worker name */
 static char *worker_name = "pg_rage_terminator";
 
+/*
+ * Forward declaration for main routine. Makes compiler
+ * happy (-Wunused-function, __attribute__((noreturn)))
+ */
+void pg_rage_terminator_main(Datum main_arg) pg_attribute_noreturn();
+
 static void
 pg_rage_terminator_sigterm(SIGNAL_ARGS)
 {
@@ -69,13 +75,13 @@ pg_rage_terminator_build_query(StringInfoData *buf)
                "pid, pg_terminate_backend(pid) as status, "
                "usename, datname, client_addr::text "
                "FROM pg_stat_activity "
-               "WHERE client_port IS NOT NULL",
+               "WHERE client_port IS NOT NULL "
                "AND ((random() * 100)::int < %d) ",
                      chance);
     elog(DEBUG1, "Kill query is: %s", buf->data);
 }
 
-static void
+void
 pg_rage_terminator_main(Datum main_arg)
 {
 	StringInfoData buf;
@@ -108,7 +114,11 @@ pg_rage_terminator_main(Datum main_arg)
         /* Wait necessary amount of time */
         rc = WaitLatch(&MyProc->procLatch,
                        WL_LATCH_SET | WL_TIMEOUT | WL_POSTMASTER_DEATH,
-                       sleep_interval * 1000L);
+                       sleep_interval * 1000L
+#if PG_VERSION_NUM >= 100000
+					   , PG_WAIT_EXTENSION
+#endif
+			);
         ResetLatch(&MyProc->procLatch);
 
 		/* Emergency bailout if postmaster has died */
@@ -260,7 +270,22 @@ _PG_init(void)
 	worker.bgw_flags = BGWORKER_SHMEM_ACCESS |
 		BGWORKER_BACKEND_DATABASE_CONNECTION;
 	worker.bgw_start_time = BgWorkerStart_ConsistentState;
-	worker.bgw_main = pg_rage_terminator_main;
+
+	/*
+	 * bgw_main is considered a footgun, per commit
+	 * 2113ac4cbb12 in postgresql.git. Deprecate its
+	 * usage here and use the safer method by setting
+	 * bgw_function_name and bgw_library_name. PG10 gets
+	 * rid of bgw_main completly, but we need to retain
+	 * it here to get the initialization correct.
+	 */
+#if PG_VERSION_NUM < 100000
+	worker.bgw_main = NULL;
+#endif
+
+	snprintf(worker.bgw_library_name, BGW_MAXLEN - 1, "pg_rage_terminator");
+	snprintf(worker.bgw_function_name, BGW_MAXLEN - 1, "pg_rage_terminator_main");
+
 	snprintf(worker.bgw_name, BGW_MAXLEN, "%s", worker_name);
 	/* Wait 10 seconds for restart before crash */
 	worker.bgw_restart_time = 10;
