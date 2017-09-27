@@ -5,15 +5,15 @@
 Background worker able to kill random connections based on a configurable
 chance. It's based on Michael Paquier's background worker 'kill_idle'.
 
-Rage backend scan is done using pg_stat_activity.
+The rage backend scan is done using pg_stat_activity.
 
 ## Compatible PostgreSQL versions
 
-This worker is compatible with PostgreSQL 9.3 and newer versions.
+This worker is compatible with PostgreSQL 9.4 and newer versions.
 
 ## Installation
 
-Installation of pg_rage_terminator is done using the following commands:
+The installation of pg_rage_terminator is done using the following commands:
 
     USE_PGXS=1 make
     sudo make install
@@ -25,10 +25,11 @@ within postgresql.conf:
 
 ## Configuration
 
-Following configuration options (GUC) controls pg_rage_terminator.
+Following configuration options (GUC) controls the behavior of
+pg_rage_terminator.
 
 *   __pg_rage_terminator.chance__: chance to kill a random backend. Valid values
-    are 0 to 100. Where 0 means no backends is killed. 100 ensures every backend
+    are 0 to 100. Where 0 means no backend is killed. 100 ensures every backend
     is killed.
 
 *   __pg_rage_terminator.interval__: defines the interval of "kill" lookups in
