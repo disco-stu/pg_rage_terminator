@@ -47,7 +47,7 @@ static char *worker_name = "pg_rage_terminator";
  * Forward declaration for main routine. Makes compiler
  * happy (-Wunused-function, __attribute__((noreturn)))
  */
-void pg_rage_terminator_main(Datum main_arg) pg_attribute_noreturn();
+PGDLLEXPORT void pg_rage_terminator_main(Datum main_arg) pg_attribute_noreturn();
 #endif
 
 static void
